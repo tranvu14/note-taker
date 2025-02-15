@@ -3,13 +3,16 @@ FROM node:20-alpine as builder
 
 WORKDIR /app
 
+# Copy package.json and package-lock.json first
 COPY package*.json ./
+
+# Install dependencies (including dev dependencies for building)
 RUN npm install
 
-# Install NestJS CLI globally
-RUN npm install -g @nestjs/cli
-
+# Copy the rest of the files, including tsconfig.json
 COPY . .
+
+# Build TypeScript project
 RUN npm run build
 
 # Production stage
@@ -17,16 +20,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy only necessary files for production
 COPY package*.json ./
 
-# Install all dependencies including dev dependencies for development
-RUN npm install
+# Install only production dependencies
+RUN npm install --omit=dev
 
-# Install NestJS CLI globally in production stage too
-RUN npm install -g @nestjs/cli
-
+# Copy the built dist folder and other necessary files
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
+# Expose the application port
 EXPOSE 3001
 
-CMD ["npm", "run", "start:dev"] 
+# Use a proper start command
+CMD ["node", "dist/main.js"]
