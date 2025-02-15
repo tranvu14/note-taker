@@ -1,15 +1,34 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { Note } from '@/app/types/note';
+import { useState, useCallback, useMemo } from 'react';
+import { Note, RequestNote } from '@/app/types/note';
+import { debounce } from 'lodash';
+
+interface PaginationData {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+}
+
+interface NotesResponse {
+    notes: Note[];
+    pagination: PaginationData;
+}
 
 export function useNotes() {
     const [notes, setNotes] = useState<Note[]>([]);
     const [notesLoading, setNotesLoading] = useState(false);
     const [saveLoading, setSaveLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [pagination, setPagination] = useState<PaginationData>({
+        page: 1,
+        limit: 9,
+        total: 0,
+        totalPages: 1
+    });
 
-    const fetchNotes = useCallback(async () => {
+    const fetchNotes = useCallback(async (page: number = 1, limit: number = 9) => {
         setNotesLoading(true);
         setError(null);
         try {
@@ -18,7 +37,7 @@ export function useNotes() {
                 throw new Error('No auth token found');
             }
 
-            const response = await fetch('/api/notes', {
+            const response = await fetch(`/api/notes?page=${page}&limit=${limit}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -30,6 +49,7 @@ export function useNotes() {
 
             const data = await response.json();
             setNotes(data.notes);
+            setPagination(data.pagination);
         } catch (error) {
             setError(error instanceof Error ? error.message : 'An error occurred');
             console.error('Failed to fetch notes:', error);
@@ -38,14 +58,59 @@ export function useNotes() {
         }
     }, []);
 
-    const handleSaveNote = useCallback(async (noteData: {
-        title: string;
-        content: string;
-        isPinned?: boolean;
-        isArchived?: boolean;
-        tagIds?: string[];
-        reminderDate?: string;
-    }) => {
+    const searchNotes = useCallback(
+        async (query: string, tags: string[], page: number = 1, limit: number = 9) => {
+            setNotesLoading(true);
+            setError(null);
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    throw new Error('No auth token found');
+                }
+
+                const searchParams = new URLSearchParams({
+                    page: page.toString(),
+                    limit: limit.toString(),
+                });
+
+                if (query) {
+                    searchParams.append('search', query);
+                }
+
+                if (tags.length > 0) {
+                    tags.forEach(tag => searchParams.append('tags', tag));
+                }
+
+                const response = await fetch(`/api/notes?${searchParams.toString()}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch notes');
+                }
+
+                const data = await response.json();
+                setNotes(data.notes);
+                setPagination(data.pagination);
+            } catch (error) {
+                setError(error instanceof Error ? error.message : 'An error occurred');
+                console.error('Failed to search notes:', error);
+            } finally {
+                setNotesLoading(false);
+            }
+        },
+        []
+    );
+
+    // Create a debounced version of searchNotes
+    const debouncedSearch = useMemo(
+        () => debounce(searchNotes, 300),
+        [searchNotes]
+    );
+
+    const handleSaveNote = useCallback(async (noteData: RequestNote) => {
         setSaveLoading(true);
         try {
             const token = localStorage.getItem('authToken');
@@ -80,7 +145,9 @@ export function useNotes() {
         notesLoading,
         saveLoading,
         error,
+        pagination,
         fetchNotes,
+        searchNotes: debouncedSearch,
         handleSaveNote,
     };
 } 

@@ -18,12 +18,6 @@ export default function NotePage({ params }: { params: { id: string } }) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!isAuthenticated) {
-            router.push('/');
-        }
-    }, [isAuthenticated, router]);
-
-    useEffect(() => {
         if (isAuthenticated) {
             fetchNote();
         }
@@ -52,7 +46,13 @@ export default function NotePage({ params }: { params: { id: string } }) {
         }
     };
 
-    const handleUpdateNote = async (updatedNote: Partial<Note>) => {
+    const handleUpdateNote = async (updatedNote: {
+        title: string;
+        content: string;
+        isPinned?: boolean;
+        tags?: string[];
+        reminderDate?: string;
+    }) => {
         try {
             const token = localStorage.getItem('authToken');
             const response = await fetch(`/api/notes/${params.id}`, {
@@ -145,8 +145,9 @@ export default function NotePage({ params }: { params: { id: string } }) {
 
     return (
         <div
-            className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark:bg-gray-900' : 'bg-gray-50'}`}
-            data-oid="l17mf8g"
+            className={`min-h-screen transition-colors duration-300 ${
+                darkMode ? 'dark:bg-gray-900' : 'bg-gray-50'
+            }`}
         >
             <Header
                 user={user}
@@ -156,70 +157,119 @@ export default function NotePage({ params }: { params: { id: string } }) {
                 onToggleSidebar={() => {}}
                 onToggleDarkMode={toggleDarkMode}
                 onSignOut={handleSignOut}
-                data-oid="bz6asvu"
             />
 
-            <main className="pt-16 container mx-auto px-6 py-8" data-oid="ab_c3lu">
+            <main className="pt-16 container mx-auto px-6 py-8">
+                <div className="mb-6 mt-16">
+                    <button
+                        onClick={() => router.push('/notes')}
+                        className="flex items-center text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                    >
+                        <svg
+                            className="w-5 h-5 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                            />
+                        </svg>
+                        Back to Notes
+                    </button>
+                </div>
+
                 {isEditing ? (
                     <NoteEditor
                         note={note}
                         onClose={() => setIsEditing(false)}
                         onSave={handleUpdateNote}
-                        data-oid="lcoz.8b"
                     />
                 ) : (
-                    <div
-                        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
-                        data-oid="p1p:f9w"
-                    >
-                        <div className="flex justify-between items-start mb-6" data-oid="0uc9xoy">
-                            <div data-oid="r6rh5.:">
-                                <h1
-                                    className="text-2xl font-bold text-gray-900 dark:text-white mb-2"
-                                    data-oid="qz266i8"
-                                >
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                                     {note.title}
                                 </h1>
-                                <div className="flex flex-wrap gap-2 mb-4" data-oid="t52s.52">
+                                <div className="flex flex-wrap gap-2 mb-4">
                                     {note.tags.map((tag) => (
                                         <span
                                             key={tag.id}
-                                            className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300"
-                                            data-oid="345i4y5"
+                                            className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300 transition-colors"
                                         >
                                             #{tag.name}
                                         </span>
                                     ))}
                                 </div>
                             </div>
-                            <div className="flex gap-2" data-oid="5b3bn6:">
+                            <div className="flex gap-3">
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
-                                    data-oid="5nktuld"
+                                    className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-colors duration-300 flex items-center"
                                 >
+                                    <svg
+                                        className="w-4 h-4 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                        />
+                                    </svg>
                                     Edit
                                 </button>
                                 <button
                                     onClick={handleDeleteNote}
-                                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white"
-                                    data-oid="8dlw31w"
+                                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors duration-300 flex items-center"
                                 >
+                                    <svg
+                                        className="w-4 h-4 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                        />
+                                    </svg>
                                     Delete
                                 </button>
                             </div>
                         </div>
-                        <div
-                            className="prose dark:prose-invert max-w-none"
-                            dangerouslySetInnerHTML={{ __html: note.content }}
-                            data-oid="bqi_enh"
-                        />
-
-                        <div
-                            className="mt-6 text-sm text-gray-500 dark:text-gray-400"
-                            data-oid="io:rtr0"
-                        >
-                            Last updated: {new Date(note.updatedAt).toLocaleString()}
+                        <div className="prose dark:prose-invert max-w-none mb-6">
+                            <div dangerouslySetInnerHTML={{ __html: note.content }} />
+                        </div>
+                        <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-4 mt-6">
+                            <span>Last updated: {new Date(note.updatedAt).toLocaleString()}</span>
+                            {note.reminderDate && (
+                                <span className="flex items-center">
+                                    <svg
+                                        className="w-4 h-4 mr-1"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    Reminder: {new Date(note.reminderDate).toLocaleDateString()}
+                                </span>
+                            )}
                         </div>
                     </div>
                 )}

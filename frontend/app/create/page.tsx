@@ -1,3 +1,5 @@
+// This entire file can be deleted as it only contains a blank page template and isn't being used
+
 export default function Page() {
     return (
         <div

@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { API_ENDPOINTS } from '@/app/config/api';
 
-async function getAuthToken(request: Request) {
+export async function getAuthToken(request: Request) {
     const authHeader = request.headers.get('Authorization');
-    return authHeader?.replace('Bearer ', '');
+    if (!authHeader?.startsWith('Bearer ')) {
+        return null;
+    }
+    return authHeader.split('Bearer ')[1];
 }
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
@@ -36,7 +39,7 @@ export async function PUT(
     { params }: { params: { id: string } }
 ) {
     try {
-        const token = await getAuthToken(request);
+        const token = request.headers.get('Authorization');
         if (!token) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
@@ -45,7 +48,7 @@ export async function PUT(
         const response = await fetch(`${API_ENDPOINTS.NOTES}/${params.id}`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': token,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(body),
@@ -56,7 +59,7 @@ export async function PUT(
         }
 
         const updatedNote = await response.json();
-        return NextResponse.json({ note: updatedNote });
+        return NextResponse.json({ success: true, note: updatedNote });
     } catch (error) {
         return NextResponse.json(
             { error: error instanceof Error ? error.message : 'Internal server error' },

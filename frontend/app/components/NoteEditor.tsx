@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
 import { Note } from '@/app/types/note';
@@ -15,7 +15,7 @@ interface NoteEditorProps {
         title: string;
         content: string;
         isPinned?: boolean;
-        tagIds?: string[];
+        tags?: string[];
         reminderDate?: string;
     }) => Promise<void>;
 }
@@ -28,35 +28,43 @@ export function NoteEditor({ note, onClose, onSave }: NoteEditorProps) {
     const [tags, setTags] = useState<string[]>(note?.tags.map((t) => t.name) || []);
     const [reminderDate, setReminderDate] = useState<string>(note?.reminderDate || '');
 
-    const handleAddTag = () => {
+    const handleAddTag = useCallback(() => {
         if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-            setTags([...tags, tagInput.trim()]);
+            setTags(prev => [...prev, tagInput.trim()]);
             setTagInput('');
         }
-    };
+    }, [tagInput, tags]);
 
-    const handleRemoveTag = (tagToRemove: string) => {
-        setTags(tags.filter((tag) => tag !== tagToRemove));
-    };
+    const handleRemoveTag = useCallback((tagToRemove: string) => {
+        setTags(prev => prev.filter((tag) => tag !== tagToRemove));
+    }, []);
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             handleAddTag();
         }
-    };
+    }, [handleAddTag]);
 
-    const handleSave = () => {
+    const handleSave = useCallback(() => {
         if (title.trim() && content.trim()) {
             onSave({
                 title: title.trim(),
                 content: content.trim(),
                 isPinned,
-                tagIds: tags,
+                tags,
                 reminderDate: reminderDate || undefined,
             });
         }
-    };
+    }, [title, content, isPinned, tags, reminderDate, onSave]);
+
+    const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setTitle(e.target.value);
+    }, []);
+
+    const handleTagInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setTagInput(e.target.value);
+    }, []);
 
     const modules = {
         toolbar: [
@@ -83,7 +91,7 @@ export function NoteEditor({ note, onClose, onSave }: NoteEditorProps) {
                         className="text-2xl font-bold text-gray-900 dark:text-white"
                         data-oid="6w_cqms"
                     >
-                        Create New Note
+                        {note ? 'Edit Note' : 'Create New Note'}
                     </h2>
                     <button
                         onClick={onClose}
@@ -114,7 +122,7 @@ export function NoteEditor({ note, onClose, onSave }: NoteEditorProps) {
                             type="text"
                             placeholder="Note Title"
                             value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={handleTitleChange}
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-600 dark:bg-gray-700 dark:text-white"
                             data-oid="qt2wd7l"
                         />
@@ -137,7 +145,7 @@ export function NoteEditor({ note, onClose, onSave }: NoteEditorProps) {
                                 type="text"
                                 placeholder="Add tags (press Enter)"
                                 value={tagInput}
-                                onChange={(e) => setTagInput(e.target.value)}
+                                onChange={handleTagInputChange}
                                 onKeyDown={handleKeyDown}
                                 className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-600 dark:bg-gray-700 dark:text-white"
                                 data-oid="9k1ddnc"

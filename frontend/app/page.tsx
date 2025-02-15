@@ -6,8 +6,9 @@ import { AuthModal } from './components/Auth/AuthModal';
 import { useAuth } from './hooks/useAuth';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useRouter } from 'next/navigation';
+import { observer } from 'mobx-react-lite';
 
-export default function Page() {
+export default observer(function Page() {
     const { isAuthenticated, handleAuth } = useAuth();
     const { darkMode, toggleDarkMode } = useDarkMode();
     const router = useRouter();
@@ -45,4 +46,4 @@ export default function Page() {
             )}
         </>
     );
-}
+});

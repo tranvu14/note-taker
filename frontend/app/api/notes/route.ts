@@ -4,8 +4,7 @@ import { API_ENDPOINTS } from '@/app/config/api';
 
 export async function GET(request: Request) {
     try {
-      const token = request.headers.get('Authorization');
-
+        const token = request.headers.get('Authorization');
         if (!token) {
             return NextResponse.json(
                 { success: false, error: 'Unauthorized' },
@@ -13,7 +12,23 @@ export async function GET(request: Request) {
             );
         }
 
-        const response = await fetch(API_ENDPOINTS.NOTES, {
+        // Get search parameters from URL
+        const { searchParams } = new URL(request.url);
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '9');
+        const search = searchParams.get('search') || '';
+        const tags = searchParams.getAll('tags');
+
+        // Construct API URL with search parameters
+        const apiUrl = new URL(API_ENDPOINTS.NOTES);
+        apiUrl.searchParams.set('page', page.toString());
+        apiUrl.searchParams.set('limit', limit.toString());
+        if (search) {
+            apiUrl.searchParams.set('search', search);
+        }
+        tags.forEach(tag => apiUrl.searchParams.append('tags', tag));
+
+        const response = await fetch(apiUrl.toString(), {
             headers: {
                 'Authorization': token,
             },
@@ -25,7 +40,16 @@ export async function GET(request: Request) {
         }
 
         const data = await response.json();
-        return NextResponse.json({ success: true, notes: data });
+        return NextResponse.json({
+            success: true,
+            notes: data.notes,
+            pagination: {
+                page: page,
+                limit: limit,
+                total: data.pagination.total,
+                totalPages: data.pagination.totalPages
+            }
+        });
     } catch (error) {
         console.error('Error in GET /api/notes:', error);
         const status = error instanceof Error && error.message.includes('401') ? 401 : 500;

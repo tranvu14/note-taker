@@ -1,15 +1,15 @@
 'use client';
 
 import { Note } from '@/app/types/note';
-import { useState } from 'react';
-import { NoteDetail } from './NoteDetail';
+import { useRouter } from 'next/navigation';
 
 interface NoteGridProps {
     notes: Note[];
     isLoading: boolean;
+    total?: number;
 }
 
-export function NoteGrid({ notes, isLoading }: NoteGridProps) {
+export function NoteGrid({ notes, isLoading, total }: NoteGridProps) {
     if (isLoading) {
         return (
             <div
@@ -23,119 +23,101 @@ export function NoteGrid({ notes, isLoading }: NoteGridProps) {
 
     if (notes.length === 0) {
         return (
-            <div
-                className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400"
-                data-oid="a.z45.0"
-            >
-                No notes yet. Create your first note!
+            <div className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">
+                No notes found matching your criteria.
             </div>
         );
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-oid="4iing:g">
-            {notes.map((note) => (
-                <NoteCard key={note.id} note={note} data-oid=":4lhuho" />
-            ))}
-        </div>
-    );
-}
-
-function NoteCard({ note }: { note: Note }) {
-    const [showDetail, setShowDetail] = useState(false);
-
-    return (
         <>
-            <div
-                onClick={() => setShowDetail(true)}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 group cursor-pointer hover:-translate-y-1"
-                data-oid="1nh84f2"
-            >
-                <div className="flex justify-between items-start mb-4" data-oid="e1ht:uu">
-                    <div className="flex items-center gap-2" data-oid="qxzeli.">
-                        {note.isPinned && <PinIcon data-oid="phgbs:k" />}
-                        <h3
-                            className="text-lg font-semibold text-gray-800 dark:text-white"
-                            data-oid="f70cge4"
-                        >
-                            {note.title}
-                        </h3>
-                    </div>
-                    <NoteActions data-oid="p:pwyv:" />
-                </div>
-                <NoteContent note={note} data-oid="uzbh1ms" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {notes.map((note) => (
+                    <NoteCard key={note.id} note={note} data-oid=":4lhuho" />
+                ))}
             </div>
-            {showDetail && (
-                <NoteDetail
-                    note={note}
-                    onClose={() => setShowDetail(false)}
-                    onUpdate={(updatedNote) => {
-                        console.log('Updating note:', updatedNote);
-                        // Here you would typically update the note in your backend
-                        setShowDetail(false);
-                    }}
-                    data-oid="d4fs862"
-                />
+            {total && total > notes.length && (
+                <div className="text-center mt-4 text-sm text-gray-500 dark:text-gray-400">
+                    Showing {notes.length} of {total} notes
+                </div>
             )}
         </>
     );
 }
 
-function PinIcon() {
-    return (
-        <svg
-            className="w-4 h-4 text-yellow-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            data-oid="mcuc0cd"
-        >
-            <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 5h14l-5 5v6l-4-3v-3l-5-5z"
-                data-oid="jsperu7"
-            />
-        </svg>
-    );
-}
+function NoteCard({ note }: { note: Note }) {
+    const router = useRouter();
 
-function NoteActions() {
+    const goToDetail = () => {
+        router.push(`/note/${note.id}`);
+    }
+    
     return (
-        <div
-            className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2"
-            data-oid="4hw1oy5"
-        >
-            <button
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                data-oid="t-n1367"
+        <>
+            <div
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 group cursor-pointer hover:-translate-y-1"
+                data-oid="1nh84f2"
+                onClick={goToDetail}
             >
-                <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    data-oid="a-xcxuo"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                        data-oid="9n1r8a7"
-                    />
-                </svg>
-            </button>
-        </div>
+                <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                            {note.title}
+                        </h3>
+                    </div>
+                </div>
+                <NoteContent note={note} data-oid="uzbh1ms" />
+            </div>
+        </>
     );
 }
 
 function NoteContent({ note }: { note: Note }) {
+    const router = useRouter();
+
+    const getPlainTextContent = (htmlContent: string) => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        return tempDiv.textContent || tempDiv.innerText || '';
+    };
+
+
+    const truncateText = (text: string, maxLength: number = 150) => {
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
+    };
+
+
+    const handlePinNote = async (e: React.MouseEvent) => {
+        e.stopPropagation(); 
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/notes/${note.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    isPinned: !note.isPinned
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update note');
+            }
+
+        } catch (error) {
+            console.error('Error pinning note:', error);
+        } finally {
+            router.refresh();
+        }
+    };
+
     return (
         <>
             <p className="text-gray-600 dark:text-gray-300 mb-4" data-oid="vni.l0p">
-                {note.content}
+                {truncateText(getPlainTextContent(note.content))}
             </p>
             <div className="flex flex-wrap gap-2 mb-4" data-oid="mil7ul3">
                 {note.tags &&
@@ -166,47 +148,38 @@ function NoteContent({ note }: { note: Note }) {
                     <button
                         className="hover:text-purple-600 dark:hover:text-purple-400"
                         data-oid=":uwbkc:"
+                        onClick={handlePinNote}
                     >
-                        <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            data-oid="31_xfp1"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                data-oid="5cqwfwf"
-                            />
-                        </svg>
-                    </button>
-                    <button
-                        className="hover:text-purple-600 dark:hover:text-purple-400"
-                        data-oid="k-t14ge"
-                    >
-                        <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            data-oid="7n3ry83"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                                data-oid="17pgr9k"
-                            />
-                        </svg>
+                        {note.isPinned ? (
+                            <svg
+                                className="w-4 h-4"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                data-oid="31_xfp1"
+                            >
+                                <path
+                                    d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z"
+                                />
+                            </svg>
+                        ) : (
+                            <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                data-oid="31_xfp1"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z"
+                                />
+                            </svg>
+                        )}
                     </button>
                 </div>
             </div>
         </>
     );
 }
-
-// Add other helper components like PinIcon, NoteActions, NoteContent...
