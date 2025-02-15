@@ -1,21 +1,24 @@
-import { API_ENDPOINTS } from "@/app/config/api";
-import { NextResponse } from "next/server";
+import { API_ENDPOINTS } from '@/app/config/api';
+import { NextResponse } from 'next/server';
+
+function getAuthToken(request: Request) {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+        return null;
+    }
+    return authHeader.split('Bearer ')[1];
+}
 
 export async function GET(request: Request) {
     try {
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader?.startsWith('Bearer ')) {
-            return NextResponse.json({ error: 'Invalid token format' }, { status: 401 });
-        }
-
-        const token = authHeader.split('Bearer ')[1];
+        const token = getAuthToken(request);
         if (!token) {
-            return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+            return NextResponse.json({ error: 'Invalid token format' }, { status: 401 });
         }
 
         const response = await fetch(API_ENDPOINTS.AUTH.ME, {
             headers: {
-                'Authorization': `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
 
@@ -24,16 +27,13 @@ export async function GET(request: Request) {
         if (!response.ok) {
             return NextResponse.json(
                 { error: data.message || 'Authentication failed' },
-                { status: response.status }
+                { status: response.status },
             );
         }
 
         return NextResponse.json(data);
     } catch (error) {
         console.error('Auth validation error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-} 
+}

@@ -134,7 +134,7 @@ export function LandingPage({ darkMode, onToggleDarkMode, onSignInClick }: Landi
                                         data-oid="y9zcity"
                                     >
                                         <span className="relative z-10" data-oid="sqj_v0i">
-                                            Get Started - It's Free
+                                            Get Started - It&apos;s Free
                                         </span>
                                         <div
                                             className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity blur-xl"

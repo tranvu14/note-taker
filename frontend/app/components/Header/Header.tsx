@@ -7,7 +7,6 @@ import { Fragment } from 'react';
 interface HeaderProps {
     user: User | null;
     darkMode: boolean;
-    showSidebar: boolean;
     isAuthenticated: boolean;
     onToggleSidebar: () => void;
     onToggleDarkMode: () => void;
@@ -17,7 +16,6 @@ interface HeaderProps {
 export function Header({
     user,
     darkMode,
-    showSidebar,
     isAuthenticated,
     onToggleSidebar,
     onToggleDarkMode,
@@ -28,10 +26,7 @@ export function Header({
             className="fixed top-0 w-full bg-white dark:bg-gray-800 shadow-md z-50"
             data-oid="fz3:rxx"
         >
-            <div
-                className="mx-auto px-4 py-3 flex items-center justify-between"
-                data-oid="8:eheqn"
-            >
+            <div className="mx-auto px-4 py-3 flex items-center justify-between" data-oid="8:eheqn">
                 <div className="flex items-center space-x-4" data-oid="m3jla6o">
                     {isAuthenticated && (
                         <button
@@ -103,12 +98,7 @@ export function Header({
                             </svg>
                         )}
                     </button>
-                    {isAuthenticated && user?.id && (
-                        <UserMenu 
-                            user={user} 
-                            onSignOut={onSignOut} 
-                        />
-                    )}
+                    {isAuthenticated && user?.id && <UserMenu user={user} onSignOut={onSignOut} />}
                 </div>
             </div>
         </header>
@@ -165,10 +155,9 @@ function UserMenu({ user, onSignOut }: { user: User; onSignOut: () => void }) {
 function UserMenuItems({ onSignOut }: { onSignOut: () => void }) {
     return (
         <div className="px-1 py-1" data-oid="3cm:gh:">
-            <MenuButton icon="profile" text="Profile" data-oid="8dy7a8u" />
-            <MenuButton icon="settings" text="Settings" data-oid="9._h5aw" />
+            <MenuButton text="Profile" data-oid="8dy7a8u" />
+            <MenuButton text="Settings" data-oid="9._h5aw" />
             <MenuButton
-                icon="signout"
                 text="Sign out"
                 onClick={onSignOut}
                 className="text-red-600 dark:text-red-400"
@@ -179,12 +168,10 @@ function UserMenuItems({ onSignOut }: { onSignOut: () => void }) {
 }
 
 function MenuButton({
-    icon,
     text,
     onClick,
     className = 'text-gray-700 dark:text-gray-200',
 }: {
-    icon: string;
     text: string;
     onClick?: () => void;
     className?: string;

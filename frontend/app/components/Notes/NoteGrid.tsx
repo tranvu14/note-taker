@@ -4,7 +4,7 @@ import { Note } from '@/app/types/note';
 import { useRouter } from 'next/navigation';
 import { useNotes } from '@/app/hooks/useNotes';
 import { Menu, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Fragment, useCallback } from 'react';
 
 interface NoteGridProps {
     notes: Note[];
@@ -54,25 +54,25 @@ function NoteCard({ note }: { note: Note }) {
 
     const goToDetail = () => {
         router.push(`/note/${note.id}`);
-    }
+    };
 
     const handleArchive = async (e: React.MouseEvent) => {
         e.stopPropagation();
         await handleArchiveNote(note.id, !note.isArchived);
     };
-    
-    const handlePinNote = async (e: React.MouseEvent) => {
-        e.stopPropagation(); 
+
+    const handlePinNote = useCallback(async (e: React.MouseEvent) => {
+        e.stopPropagation();
         try {
             const token = localStorage.getItem('authToken');
             const response = await fetch(`/api/notes/${note.id}`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    isPinned: !note.isPinned
+                    isPinned: !note.isPinned,
                 }),
             });
 
@@ -84,7 +84,7 @@ function NoteCard({ note }: { note: Note }) {
         } finally {
             router.refresh();
         }
-    };
+    }, [note.id, note.isPinned, router]);
 
     return (
         <div
@@ -132,20 +132,36 @@ function NoteCard({ note }: { note: Note }) {
                                         <button
                                             onClick={handlePinNote}
                                             className={`${
-                                                active ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'
+                                                active
+                                                    ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300'
+                                                    : 'text-gray-700 dark:text-gray-300'
                                             } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                                         >
                                             {note.isPinned ? (
                                                 <>
-                                                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                                    <svg
+                                                        className="w-5 h-5 mr-2"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
                                                         <path d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z" />
                                                     </svg>
                                                     Unpin
                                                 </>
                                             ) : (
                                                 <>
-                                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z" />
+                                                    <svg
+                                                        className="w-5 h-5 mr-2"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z"
+                                                        />
                                                     </svg>
                                                     Pin
                                                 </>
@@ -158,20 +174,36 @@ function NoteCard({ note }: { note: Note }) {
                                         <button
                                             onClick={handleArchive}
                                             className={`${
-                                                active ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'
+                                                active
+                                                    ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300'
+                                                    : 'text-gray-700 dark:text-gray-300'
                                             } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                                         >
                                             {note.isArchived ? (
                                                 <>
-                                                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                                    <svg
+                                                        className="w-5 h-5 mr-2"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
                                                         <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                                                     </svg>
                                                     Unarchive
                                                 </>
                                             ) : (
                                                 <>
-                                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                                    <svg
+                                                        className="w-5 h-5 mr-2"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                                                        />
                                                     </svg>
                                                     Archive
                                                 </>
@@ -186,9 +218,7 @@ function NoteCard({ note }: { note: Note }) {
             </div>
             <NoteContent note={note} />
             <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mt-4">
-                <span>
-                    Updated {new Date(note.updatedAt).toLocaleDateString()}
-                </span>
+                <span>Updated {new Date(note.updatedAt).toLocaleDateString()}</span>
                 <div className="flex items-center space-x-2">
                     {note.isPinned && (
                         <span className="flex items-center text-purple-600 dark:text-purple-400">
@@ -205,45 +235,15 @@ function NoteCard({ note }: { note: Note }) {
 }
 
 function NoteContent({ note }: { note: Note }) {
-    const router = useRouter();
-
     const getPlainTextContent = (htmlContent: string) => {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlContent;
         return tempDiv.textContent || tempDiv.innerText || '';
     };
 
-
     const truncateText = (text: string, maxLength: number = 150) => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
-    };
-
-
-    const handlePinNote = async (e: React.MouseEvent) => {
-        e.stopPropagation(); 
-        try {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch(`/api/notes/${note.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    isPinned: !note.isPinned
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update note');
-            }
-
-        } catch (error) {
-            console.error('Error pinning note:', error);
-        } finally {
-            router.refresh();
-        }
     };
 
     return (

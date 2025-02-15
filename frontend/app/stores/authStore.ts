@@ -22,7 +22,7 @@ class AuthStore {
 
             const response = await fetch('/api/auth/me', {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
@@ -89,7 +89,8 @@ class AuthStore {
                 this.setLoading(false);
                 return false;
             }
-        } catch (error) {
+        } catch (_error) {
+            console.error('Error during authentication:', _error);
             this.setError('An error occurred during authentication');
             this.setLoading(false);
             return false;
@@ -106,4 +107,4 @@ class AuthStore {
     }
 }
 
-export const authStore = new AuthStore(); 
+export const authStore = new AuthStore();

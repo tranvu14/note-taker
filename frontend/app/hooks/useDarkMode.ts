@@ -22,7 +22,7 @@ export function useDarkMode() {
 
     const toggleDarkMode = useCallback(() => {
         try {
-            setDarkMode(prev => {
+            setDarkMode((prev) => {
                 const newValue = !prev;
                 localStorage.setItem('darkMode', newValue.toString());
                 document.documentElement.classList.toggle('dark', newValue);
@@ -34,4 +34,4 @@ export function useDarkMode() {
     }, []);
 
     return { darkMode, toggleDarkMode };
-} 
+}

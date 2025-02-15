@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/app/components/Header/Header';
 import { NoteEditor } from '@/app/components/NoteEditor';
@@ -14,37 +14,7 @@ export default function NotePage({ params }: { params: { id: string } }) {
     const { darkMode, toggleDarkMode } = useDarkMode();
     const [note, setNote] = useState<Note | null>(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            fetchNote();
-        }
-    }, [params.id, isAuthenticated]);
-
-    const fetchNote = async () => {
-        try {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch(`/api/notes/${params.id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch note');
-            }
-
-            const data = await response.json();
-            setNote(data.note);
-        } catch (error) {
-            setError('Failed to load note');
-            console.error('Error fetching note:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     const handleUpdateNote = async (updatedNote: {
         title: string;
@@ -103,22 +73,7 @@ export default function NotePage({ params }: { params: { id: string } }) {
     if (!isAuthenticated) {
         return null;
     }
-
-    if (isLoading) {
-        return (
-            <div
-                className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center"
-                data-oid="wrg4002"
-            >
-                <div
-                    className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"
-                    data-oid="o.vma7w"
-                ></div>
-            </div>
-        );
-    }
-
-    if (error || !note) {
+    if (!note) {
         return (
             <div
                 className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center"
@@ -129,7 +84,7 @@ export default function NotePage({ params }: { params: { id: string } }) {
                         className="text-2xl font-bold text-gray-900 dark:text-white mb-4"
                         data-oid="5slv-kn"
                     >
-                        {error || 'Note not found'}
+                        Note not found
                     </h2>
                     <button
                         onClick={() => router.push('/')}
@@ -152,7 +107,6 @@ export default function NotePage({ params }: { params: { id: string } }) {
             <Header
                 user={user}
                 darkMode={darkMode}
-                showSidebar={false}
                 isAuthenticated={isAuthenticated}
                 onToggleSidebar={() => {}}
                 onToggleDarkMode={toggleDarkMode}

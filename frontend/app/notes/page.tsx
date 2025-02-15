@@ -14,7 +14,7 @@ import { RequestNote } from '../types/note';
 export default function NotesPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading, user, handleSignOut } = useAuth();
-    const { notes, notesLoading, pagination, fetchNotes, searchNotes, handleSaveNote } = useNotes();
+    const { notes, notesLoading, pagination, searchNotes, handleSaveNote } = useNotes();
     const { darkMode, toggleDarkMode } = useDarkMode();
 
     const [showSidebar, setShowSidebar] = useState(true);
@@ -26,7 +26,7 @@ export default function NotesPage() {
     const notesPerPage = 9;
 
     const handleToggleSidebar = useCallback(() => {
-        setShowSidebar(prev => !prev);
+        setShowSidebar((prev) => !prev);
     }, []);
 
     const handleNewNote = useCallback(() => {
@@ -37,39 +37,49 @@ export default function NotesPage() {
         setShowNoteEditor(false);
     }, []);
 
-    const handleSaveAndClose = useCallback(async (note: RequestNote) => {
-        const success = await handleSaveNote(note);
-        if (success) {
-            setShowNoteEditor(false);
-        }
-    }, [handleSaveNote]);
+    const handleSaveAndClose = useCallback(
+        async (note: RequestNote) => {
+            const success = await handleSaveNote(note);
+            if (success) {
+                setShowNoteEditor(false);
+            }
+        },
+        [handleSaveNote],
+    );
 
-    const handleTagSelection = useCallback((tag: string) => {
-        setSelectedTags(prev => {
-            const newTags = prev.includes(tag)
-                ? prev.filter(t => t !== tag)
-                : [...prev, tag];
-            
-            searchNotes(searchQuery, newTags, currentPage, notesPerPage);
-            return newTags;
-        });
-    }, [searchNotes, searchQuery, currentPage, notesPerPage]);
+    const handleTagSelection = useCallback(
+        (tag: string) => {
+            setSelectedTags((prev) => {
+                const newTags = prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag];
+
+                searchNotes(searchQuery, newTags, currentPage, notesPerPage);
+                return newTags;
+            });
+        },
+        [searchNotes, searchQuery, currentPage, notesPerPage],
+    );
 
     const handleClearTags = useCallback(() => {
         setSelectedTags([]);
         searchNotes(searchQuery, [], currentPage, notesPerPage);
     }, [searchNotes, searchQuery, currentPage, notesPerPage]);
 
-    const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(e.target.value);
-        searchNotes(e.target.value, selectedTags, currentPage, notesPerPage);
-    }, [searchNotes, selectedTags, currentPage, notesPerPage]);
+    const handleSearchChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setSearchQuery(e.target.value);
+            searchNotes(e.target.value, selectedTags, currentPage, notesPerPage);
+        },
+        [searchNotes, selectedTags, currentPage, notesPerPage],
+    );
 
-    const handlePageChange = useCallback((pageNumber: number) => {
-        setCurrentPage(pageNumber);
-        searchNotes(searchQuery, selectedTags, pageNumber, notesPerPage);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [searchNotes, searchQuery, selectedTags, notesPerPage]);
+    const handlePageChange = useCallback(
+        (pageNumber: number) => {
+            setCurrentPage(pageNumber);
+            searchNotes(searchQuery, selectedTags, pageNumber, notesPerPage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        [searchNotes, searchQuery, selectedTags, notesPerPage],
+    );
 
     useEffect(() => {
         if (!isAuthenticated && !isLoading) {
@@ -81,12 +91,12 @@ export default function NotesPage() {
         if (isAuthenticated) {
             searchNotes(searchQuery, selectedTags, currentPage, notesPerPage);
         }
-    }, [isAuthenticated, searchNotes, currentPage, notesPerPage]);
+    }, [isAuthenticated, searchNotes, searchQuery, selectedTags, currentPage, notesPerPage]);
 
     const uniqueTags = useMemo(() => {
         const tagSet = new Set<string>();
-        notes.forEach(note => {
-            note.tags.forEach(tag => tagSet.add(tag.name));
+        notes.forEach((note) => {
+            note.tags.forEach((tag) => tagSet.add(tag.name));
         });
         return Array.from(tagSet);
     }, [notes]);
@@ -104,11 +114,12 @@ export default function NotesPage() {
     }
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark:bg-gray-900' : 'bg-gray-50'}`}>
+        <div
+            className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark:bg-gray-900' : 'bg-gray-50'}`}
+        >
             <Header
                 user={user}
                 darkMode={darkMode}
-                showSidebar={showSidebar}
                 isAuthenticated={isAuthenticated}
                 onToggleSidebar={handleToggleSidebar}
                 onToggleDarkMode={toggleDarkMode}
@@ -123,7 +134,9 @@ export default function NotesPage() {
                     onTabChange={setActiveTab}
                 />
 
-                <main className={`flex-1 transition-all duration-300 ${showSidebar ? 'ml-64' : 'ml-0'}`}>
+                <main
+                    className={`flex-1 transition-all duration-300 ${showSidebar ? 'ml-64' : 'ml-0'}`}
+                >
                     <div className="container mx-auto px-6 py-8">
                         <div className="mb-6 space-y-4">
                             <div className="relative">
@@ -174,11 +187,7 @@ export default function NotesPage() {
                             </div>
                         </div>
 
-                        <NoteGrid 
-                            notes={notes} 
-                            isLoading={notesLoading} 
-                            total={pagination.total} 
-                        />
+                        <NoteGrid notes={notes} isLoading={notesLoading} total={pagination.total} />
 
                         {pagination.totalPages > 1 && (
                             <div className="mt-8 flex justify-center">
@@ -194,8 +203,11 @@ export default function NotesPage() {
                                     >
                                         Previous
                                     </button>
-                                    
-                                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNumber) => (
+
+                                    {Array.from(
+                                        { length: pagination.totalPages },
+                                        (_, i) => i + 1,
+                                    ).map((pageNumber) => (
                                         <button
                                             key={pageNumber}
                                             onClick={() => handlePageChange(pageNumber)}
@@ -208,7 +220,7 @@ export default function NotesPage() {
                                             {pageNumber}
                                         </button>
                                     ))}
-                                    
+
                                     <button
                                         onClick={() => handlePageChange(pagination.page + 1)}
                                         disabled={pagination.page === pagination.totalPages}
@@ -228,11 +240,8 @@ export default function NotesPage() {
             </div>
 
             {showNoteEditor && (
-                <NoteEditor
-                    onClose={handleCloseEditor}
-                    onSave={handleSaveAndClose}
-                />
+                <NoteEditor onClose={handleCloseEditor} onSave={handleSaveAndClose} />
             )}
         </div>
     );
-} 
+}

@@ -1,25 +1,25 @@
 export interface Note {
-  id: string;
-  title: string;
-  content: string;
-  isPinned: boolean;
-  isArchived: boolean;
-  tags: Tag[];
-  reminderDate?: string;
-  createdAt: string;
-  updatedAt: string;
+    id: string;
+    title: string;
+    content: string;
+    isPinned: boolean;
+    isArchived: boolean;
+    tags: Tag[];
+    reminderDate?: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface RequestNote {
-  title: string;
-  content: string;
-  isPinned?: boolean;
-  isArchived?: boolean;
-  tags?: string[];
-  reminderDate?: string;
+    title: string;
+    content: string;
+    isPinned?: boolean;
+    isArchived?: boolean;
+    tags?: string[];
+    reminderDate?: string;
 }
 
 export interface Tag {
-  id: string;
-  name: string;
-} 
+    id: string;
+    name: string;
+}

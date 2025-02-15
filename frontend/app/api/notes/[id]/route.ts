@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { API_ENDPOINTS } from '@/app/config/api';
 
-export async function getAuthToken(request: Request) {
+function getAuthToken(request: Request) {
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
         return null;
@@ -17,7 +17,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         }
 
         const response = await fetch(`${API_ENDPOINTS.NOTES}/${params.id}`, {
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!response.ok) {
@@ -29,15 +29,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
     } catch (error) {
         return NextResponse.json(
             { error: error instanceof Error ? error.message : 'Internal server error' },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }
 
-export async function PUT(
-    request: Request,
-    { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
         const token = request.headers.get('Authorization');
         if (!token) {
@@ -48,7 +45,7 @@ export async function PUT(
         const response = await fetch(`${API_ENDPOINTS.NOTES}/${params.id}`, {
             method: 'PUT',
             headers: {
-                'Authorization': token,
+                Authorization: token,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(body),
@@ -63,15 +60,12 @@ export async function PUT(
     } catch (error) {
         return NextResponse.json(
             { error: error instanceof Error ? error.message : 'Internal server error' },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }
 
-export async function DELETE(
-    request: Request,
-    { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
     try {
         const token = await getAuthToken(request);
         if (!token) {
@@ -80,7 +74,7 @@ export async function DELETE(
 
         const response = await fetch(`${API_ENDPOINTS.NOTES}/${params.id}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!response.ok) {
@@ -91,7 +85,7 @@ export async function DELETE(
     } catch (error) {
         return NextResponse.json(
             { error: error instanceof Error ? error.message : 'Internal server error' },
-            { status: 500 }
+            { status: 500 },
         );
     }
-} 
+}

@@ -12,36 +12,27 @@ import { useDarkMode } from '../hooks/useDarkMode';
 export default function ArchivedNotesPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading, user, handleSignOut } = useAuth();
-    const { notes, notesLoading, pagination, searchNotes } = useNotes();
+    const { notes, notesLoading, pagination } = useNotes();
     const { darkMode, toggleDarkMode } = useDarkMode();
 
     const [showSidebar, setShowSidebar] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
-
     useEffect(() => {
         if (!isAuthenticated && !isLoading) {
             router.replace('/');
         }
     }, [isAuthenticated, isLoading, router]);
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            searchNotes(searchQuery, selectedTags, currentPage, 9, true);
-        }
-    }, [isAuthenticated, searchNotes, searchQuery, selectedTags, currentPage]);
-
     if (!isAuthenticated) {
         return null;
     }
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark:bg-gray-900' : 'bg-gray-50'}`}>
+        <div
+            className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark:bg-gray-900' : 'bg-gray-50'}`}
+        >
             <Header
                 user={user}
                 darkMode={darkMode}
-                showSidebar={showSidebar}
                 isAuthenticated={isAuthenticated}
                 onToggleSidebar={() => setShowSidebar(!showSidebar)}
                 onToggleDarkMode={toggleDarkMode}
@@ -60,19 +51,21 @@ export default function ArchivedNotesPage() {
                     }}
                 />
 
-                <main className={`flex-1 transition-all duration-300 ${showSidebar ? 'ml-64' : 'ml-0'}`}>
+                <main
+                    className={`flex-1 transition-all duration-300 ${showSidebar ? 'ml-64' : 'ml-0'}`}
+                >
                     <div className="container mx-auto px-6 py-8">
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                             Archived Notes
                         </h1>
-                        <NoteGrid 
-                            notes={notes.filter(note => note.isArchived)} 
-                            isLoading={notesLoading} 
-                            total={pagination?.total} 
+                        <NoteGrid
+                            notes={notes.filter((note) => note.isArchived)}
+                            isLoading={notesLoading}
+                            total={pagination?.total}
                         />
                     </div>
                 </main>
             </div>
         </div>
     );
-} 
+}

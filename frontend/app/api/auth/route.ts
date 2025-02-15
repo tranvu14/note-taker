@@ -23,7 +23,7 @@ export async function POST(request: Request) {
             default:
                 return NextResponse.json(
                     { success: false, error: 'Invalid action' },
-                    { status: 400 }
+                    { status: 400 },
                 );
         }
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         if (!response.ok) {
             return NextResponse.json(
                 { success: false, error: result.message || 'Authentication failed' },
-                { status: response.status }
+                { status: response.status },
             );
         }
 
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         console.error('Auth error:', error);
         return NextResponse.json(
             { success: false, error: 'Internal server error' },
-            { status: 500 }
+            { status: 500 },
         );
     }
-} 
+}

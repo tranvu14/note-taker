@@ -11,7 +11,7 @@ interface PaginationData {
     totalPages: number;
 }
 
-interface NotesResponse {
+interface _NotesResponse {
     notes: Note[];
     pagination: PaginationData;
 }
@@ -25,7 +25,7 @@ export function useNotes() {
         page: 1,
         limit: 9,
         total: 0,
-        totalPages: 1
+        totalPages: 1,
     });
 
     const fetchNotes = useCallback(async (page: number = 1, limit: number = 9) => {
@@ -39,10 +39,10 @@ export function useNotes() {
 
             const response = await fetch(`/api/notes?page=${page}&limit=${limit}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
-            
+
             if (!response.ok) {
                 throw new Error('Failed to fetch notes');
             }
@@ -60,7 +60,13 @@ export function useNotes() {
     }, []);
 
     const searchNotes = useCallback(
-        async (query: string, tags: string[], page: number = 1, limit: number = 9, archived?: boolean) => {
+        async (
+            query: string,
+            tags: string[],
+            page: number = 1,
+            limit: number = 9,
+            archived?: boolean,
+        ) => {
             setNotesLoading(true);
             setError(null);
             try {
@@ -79,7 +85,7 @@ export function useNotes() {
                 }
 
                 if (tags.length > 0) {
-                    tags.forEach(tag => searchParams.append('tags', tag));
+                    tags.forEach((tag) => searchParams.append('tags', tag));
                 }
 
                 if (archived !== undefined) {
@@ -88,10 +94,10 @@ export function useNotes() {
 
                 const response = await fetch(`/api/notes?${searchParams.toString()}`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`,
                     },
                 });
-                
+
                 if (!response.ok) {
                     throw new Error('Failed to fetch notes');
                 }
@@ -106,14 +112,11 @@ export function useNotes() {
                 setNotesLoading(false);
             }
         },
-        []
+        [],
     );
 
     // Create a debounced version of searchNotes
-    const debouncedSearch = useMemo(
-        () => debounce(searchNotes, 300),
-        [searchNotes]
-    );
+    const debouncedSearch = useMemo(() => debounce(searchNotes, 300), [searchNotes]);
 
     const handleSaveNote = useCallback(async (noteData: RequestNote) => {
         setSaveLoading(true);
@@ -122,7 +125,7 @@ export function useNotes() {
             const response = await fetch('/api/notes', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(noteData),
@@ -131,7 +134,7 @@ export function useNotes() {
             const data = await response.json();
 
             if (data.success) {
-                setNotes(prev => [data.note, ...prev]);
+                setNotes((prev) => [data.note, ...prev]);
                 return true;
             } else {
                 throw new Error(data.error);
@@ -151,7 +154,7 @@ export function useNotes() {
             const response = await fetch(`/api/notes/${noteId}`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ isArchived: archive }),
@@ -162,9 +165,9 @@ export function useNotes() {
             }
 
             // Update the notes list locally
-            setNotes(prev => prev.map(note => 
-                note.id === noteId ? { ...note, isArchived: archive } : note
-            ));
+            setNotes((prev) =>
+                prev.map((note) => (note.id === noteId ? { ...note, isArchived: archive } : note)),
+            );
 
             return true;
         } catch (error) {
@@ -184,4 +187,4 @@ export function useNotes() {
         handleSaveNote,
         handleArchiveNote,
     };
-} 
+}

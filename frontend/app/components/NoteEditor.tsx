@@ -23,28 +23,31 @@ interface NoteEditorProps {
 export function NoteEditor({ note, onClose, onSave }: NoteEditorProps) {
     const [title, setTitle] = useState(note?.title || '');
     const [content, setContent] = useState(note?.content || '');
-    const [isPinned, setIsPinned] = useState(note?.isPinned || false);
+    const [isPinned, _setIsPinned] = useState(note?.isPinned || false);
     const [tagInput, setTagInput] = useState('');
     const [tags, setTags] = useState<string[]>(note?.tags.map((t) => t.name) || []);
-    const [reminderDate, setReminderDate] = useState<string>(note?.reminderDate || '');
+    const [reminderDate, _setReminderDate] = useState<Date | null>(note?.reminderDate ? new Date(note.reminderDate) : null);
 
     const handleAddTag = useCallback(() => {
         if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-            setTags(prev => [...prev, tagInput.trim()]);
+            setTags((prev) => [...prev, tagInput.trim()]);
             setTagInput('');
         }
     }, [tagInput, tags]);
 
     const handleRemoveTag = useCallback((tagToRemove: string) => {
-        setTags(prev => prev.filter((tag) => tag !== tagToRemove));
+        setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
     }, []);
 
-    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleAddTag();
-        }
-    }, [handleAddTag]);
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddTag();
+            }
+        },
+        [handleAddTag],
+    );
 
     const handleSave = useCallback(() => {
         if (title.trim() && content.trim()) {
@@ -53,7 +56,7 @@ export function NoteEditor({ note, onClose, onSave }: NoteEditorProps) {
                 content: content.trim(),
                 isPinned,
                 tags,
-                reminderDate: reminderDate || undefined,
+                reminderDate: reminderDate ? reminderDate.toISOString() : undefined,
             });
         }
     }, [title, content, isPinned, tags, reminderDate, onSave]);

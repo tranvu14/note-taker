@@ -9,4 +9,4 @@ export const API_ENDPOINTS = {
         ME: `${API_BASE_URL}/auth/me`,
     },
     NOTES: `${API_BASE_URL}/notes`,
-}; 
+};
