@@ -29,7 +29,7 @@ export function Header({
             data-oid="fz3:rxx"
         >
             <div
-                className="container mx-auto px-4 py-3 flex items-center justify-between"
+                className="mx-auto px-4 py-3 flex items-center justify-between"
                 data-oid="8:eheqn"
             >
                 <div className="flex items-center space-x-4" data-oid="m3jla6o">
@@ -103,8 +103,11 @@ export function Header({
                             </svg>
                         )}
                     </button>
-                    {isAuthenticated && user && (
-                        <UserMenu user={user} onSignOut={onSignOut} data-oid="_0:h5cc" />
+                    {isAuthenticated && user?.id && (
+                        <UserMenu 
+                            user={user} 
+                            onSignOut={onSignOut} 
+                        />
                     )}
                 </div>
             </div>

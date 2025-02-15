@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 interface SidebarProps {
     showSidebar: boolean;
@@ -11,6 +12,7 @@ interface SidebarProps {
 
 export function Sidebar({ showSidebar, activeTab, onNewNote, onTabChange }: SidebarProps) {
     const pathname = usePathname();
+    const router = useRouter();
 
     // Determine active tab based on current route
     const getActiveTab = () => {
@@ -35,34 +37,11 @@ export function Sidebar({ showSidebar, activeTab, onNewNote, onTabChange }: Side
             ),
         },
         {
-            name: 'Favorites',
-            icon: (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-            ),
-        },
-        {
-            name: 'Shared',
-            icon: (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-            ),
-        },
-        {
             name: 'Archived',
+            path: '/archived',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                </svg>
-            ),
-        },
-        {
-            name: 'Trash',
-            icon: (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
             ),
         },
@@ -87,7 +66,10 @@ export function Sidebar({ showSidebar, activeTab, onNewNote, onTabChange }: Side
                     {sidebarItems.map((item) => (
                         <button
                             key={item.name}
-                            onClick={() => onTabChange(item.name.toLowerCase())}
+                            onClick={() => {
+                                onTabChange(item.name.toLowerCase());
+                                router.push(item.path);
+                            }}
                             className={`w-full px-4 py-2 rounded-lg text-left transition-colors flex items-center gap-3 ${
                                 currentTab === item.name.toLowerCase()
                                     ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300'

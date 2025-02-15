@@ -2,6 +2,9 @@
 
 import { Note } from '@/app/types/note';
 import { useRouter } from 'next/navigation';
+import { useNotes } from '@/app/hooks/useNotes';
+import { Menu, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
 
 interface NoteGridProps {
     notes: Note[];
@@ -47,28 +50,157 @@ export function NoteGrid({ notes, isLoading, total }: NoteGridProps) {
 
 function NoteCard({ note }: { note: Note }) {
     const router = useRouter();
+    const { handleArchiveNote } = useNotes();
 
     const goToDetail = () => {
         router.push(`/note/${note.id}`);
     }
+
+    const handleArchive = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        await handleArchiveNote(note.id, !note.isArchived);
+    };
     
+    const handlePinNote = async (e: React.MouseEvent) => {
+        e.stopPropagation(); 
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/notes/${note.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    isPinned: !note.isPinned
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update note');
+            }
+        } catch (error) {
+            console.error('Error pinning note:', error);
+        } finally {
+            router.refresh();
+        }
+    };
+
     return (
-        <>
-            <div
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 group cursor-pointer hover:-translate-y-1"
-                data-oid="1nh84f2"
-                onClick={goToDetail}
-            >
-                <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-                            {note.title}
-                        </h3>
-                    </div>
+        <div
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 group cursor-pointer hover:-translate-y-1"
+            onClick={goToDetail}
+        >
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                        {note.title}
+                    </h3>
                 </div>
-                <NoteContent note={note} data-oid="uzbh1ms" />
+                <Menu as="div" className="relative">
+                    <Menu.Button
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                        <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                            />
+                        </svg>
+                    </Menu.Button>
+                    <Transition
+                        as={Fragment}
+                        enter="transition ease-out duration-100"
+                        enterFrom="transform opacity-0 scale-95"
+                        enterTo="transform opacity-100 scale-100"
+                        leave="transition ease-in duration-75"
+                        leaveFrom="transform opacity-100 scale-100"
+                        leaveTo="transform opacity-0 scale-95"
+                    >
+                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right divide-y divide-gray-100 rounded-md bg-white dark:bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                            <div className="px-1 py-1">
+                                <Menu.Item>
+                                    {({ active }) => (
+                                        <button
+                                            onClick={handlePinNote}
+                                            className={`${
+                                                active ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'
+                                            } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                        >
+                                            {note.isPinned ? (
+                                                <>
+                                                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z" />
+                                                    </svg>
+                                                    Unpin
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z" />
+                                                    </svg>
+                                                    Pin
+                                                </>
+                                            )}
+                                        </button>
+                                    )}
+                                </Menu.Item>
+                                <Menu.Item>
+                                    {({ active }) => (
+                                        <button
+                                            onClick={handleArchive}
+                                            className={`${
+                                                active ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'
+                                            } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                        >
+                                            {note.isArchived ? (
+                                                <>
+                                                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                                    </svg>
+                                                    Unarchive
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                                    </svg>
+                                                    Archive
+                                                </>
+                                            )}
+                                        </button>
+                                    )}
+                                </Menu.Item>
+                            </div>
+                        </Menu.Items>
+                    </Transition>
+                </Menu>
             </div>
-        </>
+            <NoteContent note={note} />
+            <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+                <span>
+                    Updated {new Date(note.updatedAt).toLocaleDateString()}
+                </span>
+                <div className="flex items-center space-x-2">
+                    {note.isPinned && (
+                        <span className="flex items-center text-purple-600 dark:text-purple-400">
+                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z" />
+                            </svg>
+                            Pinned
+                        </span>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 }
 
@@ -137,49 +269,6 @@ function NoteContent({ note }: { note: Note }) {
                     🔔 Reminder: {new Date(note.reminderDate).toLocaleDateString()}
                 </div>
             )}
-            <div
-                className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400"
-                data-oid="jc0jat4"
-            >
-                <span data-oid="57ron--">
-                    Updated {new Date(note.updatedAt).toLocaleDateString()}
-                </span>
-                <div className="flex items-center space-x-2" data-oid="d-vuj.e">
-                    <button
-                        className="hover:text-purple-600 dark:hover:text-purple-400"
-                        data-oid=":uwbkc:"
-                        onClick={handlePinNote}
-                    >
-                        {note.isPinned ? (
-                            <svg
-                                className="w-4 h-4"
-                                fill="currentColor"
-                                viewBox="0 0 24 24"
-                                data-oid="31_xfp1"
-                            >
-                                <path
-                                    d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z"
-                                />
-                            </svg>
-                        ) : (
-                            <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                data-oid="31_xfp1"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M16 12V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v8l-2 2v2h5.2v6h2.6v-6H19v-2l-2-2z"
-                                />
-                            </svg>
-                        )}
-                    </button>
-                </div>
-            </div>
         </>
     );
 }

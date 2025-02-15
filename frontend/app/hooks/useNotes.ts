@@ -48,6 +48,7 @@ export function useNotes() {
             }
 
             const data = await response.json();
+            console.log(data);
             setNotes(data.notes);
             setPagination(data.pagination);
         } catch (error) {
@@ -59,7 +60,7 @@ export function useNotes() {
     }, []);
 
     const searchNotes = useCallback(
-        async (query: string, tags: string[], page: number = 1, limit: number = 9) => {
+        async (query: string, tags: string[], page: number = 1, limit: number = 9, archived?: boolean) => {
             setNotesLoading(true);
             setError(null);
             try {
@@ -79,6 +80,10 @@ export function useNotes() {
 
                 if (tags.length > 0) {
                     tags.forEach(tag => searchParams.append('tags', tag));
+                }
+
+                if (archived !== undefined) {
+                    searchParams.append('onlyArchived', archived.toString());
                 }
 
                 const response = await fetch(`/api/notes?${searchParams.toString()}`, {
@@ -140,6 +145,34 @@ export function useNotes() {
         }
     }, []);
 
+    const handleArchiveNote = useCallback(async (noteId: string, archive: boolean) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/notes/${noteId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ isArchived: archive }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to archive note');
+            }
+
+            // Update the notes list locally
+            setNotes(prev => prev.map(note => 
+                note.id === noteId ? { ...note, isArchived: archive } : note
+            ));
+
+            return true;
+        } catch (error) {
+            console.error('Error archiving note:', error);
+            return false;
+        }
+    }, []);
+
     return {
         notes,
         notesLoading,
@@ -149,5 +182,6 @@ export function useNotes() {
         fetchNotes,
         searchNotes: debouncedSearch,
         handleSaveNote,
+        handleArchiveNote,
     };
 } 

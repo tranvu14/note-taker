@@ -18,6 +18,7 @@ export async function GET(request: Request) {
         const limit = parseInt(searchParams.get('limit') || '9');
         const search = searchParams.get('search') || '';
         const tags = searchParams.getAll('tags');
+        const onlyArchived = searchParams.get('onlyArchived') === 'true';
 
         // Construct API URL with search parameters
         const apiUrl = new URL(API_ENDPOINTS.NOTES);
@@ -27,7 +28,9 @@ export async function GET(request: Request) {
             apiUrl.searchParams.set('search', search);
         }
         tags.forEach(tag => apiUrl.searchParams.append('tags', tag));
-
+        if (onlyArchived) {
+            apiUrl.searchParams.set('onlyArchived', onlyArchived.toString());
+        }
         const response = await fetch(apiUrl.toString(), {
             headers: {
                 'Authorization': token,
@@ -40,14 +43,15 @@ export async function GET(request: Request) {
         }
 
         const data = await response.json();
+
         return NextResponse.json({
             success: true,
             notes: data.notes,
             pagination: {
                 page: page,
                 limit: limit,
-                total: data.pagination.total,
-                totalPages: data.pagination.totalPages
+                total: data.pagination?.total,
+                totalPages: data.pagination?.totalPages
             }
         });
     } catch (error) {

@@ -14,6 +14,7 @@ export interface RequestNote {
   title: string;
   content: string;
   isPinned?: boolean;
+  isArchived?: boolean;
   tags?: string[];
   reminderDate?: string;
 }

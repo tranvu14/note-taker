@@ -11,36 +11,15 @@ class AuthStore {
         makeAutoObservable(this);
     }
 
-    setAuthenticated(value: boolean) {
-        this.isAuthenticated = value;
-    }
-
-    setUser(user: User | null) {
-        this.user = user;
-    }
-
-    setLoading(value: boolean) {
-        this.isLoading = value;
-    }
-
-    setError(error: string | null) {
-        this.error = error;
-    }
-
-    clearAuth() {
-        this.setAuthenticated(false);
-        this.setUser(null);
-    }
-
-    async validateToken() {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            this.clearAuth();
-            this.setLoading(false);
-            return;
-        }
-
+    validateToken = async () => {
         try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                this.setAuthenticated(false);
+                this.setUser(null);
+                return;
+            }
+
             const response = await fetch('/api/auth/me', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -49,19 +28,40 @@ class AuthStore {
 
             if (response.ok) {
                 const data = await response.json();
-                this.setUser(data.user);
+                this.setUser(data);
                 this.setAuthenticated(true);
             } else {
-                localStorage.removeItem('authToken');
-                this.clearAuth();
+                this.setAuthenticated(false);
+                this.setUser(null);
             }
         } catch (error) {
-            console.error('Token validation failed:', error);
-            localStorage.removeItem('authToken');
-            this.clearAuth();
+            console.error('Token validation error:', error);
+            this.setAuthenticated(false);
+            this.setUser(null);
         } finally {
             this.setLoading(false);
         }
+    };
+
+    setUser = (user: User | null) => {
+        this.user = user;
+    };
+
+    setAuthenticated = (value: boolean) => {
+        this.isAuthenticated = value;
+    };
+
+    setLoading = (value: boolean) => {
+        this.isLoading = value;
+    };
+
+    setError(error: string | null) {
+        this.error = error;
+    }
+
+    clearAuth() {
+        this.setAuthenticated(false);
+        this.setUser(null);
     }
 
     async handleAuth(formData: FormData) {

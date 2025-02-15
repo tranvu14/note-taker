@@ -30,7 +30,7 @@ export function LandingPage({ darkMode, onToggleDarkMode, onSignInClick }: Landi
                 data-oid="gv9xl:z"
             >
                 <div
-                    className="container mx-auto px-4 py-3 flex items-center justify-between"
+                    className="mx-auto px-4 py-3 flex items-center justify-between"
                     data-oid="cd08.nu"
                 >
                     <h1
