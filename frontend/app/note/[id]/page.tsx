@@ -7,7 +7,7 @@ import { NoteEditor } from '@/app/components/NoteEditor';
 import { useAuth } from '@/app/hooks/useAuth';
 import { useDarkMode } from '@/app/hooks/useDarkMode';
 import { Note } from '@/app/types/note';
-import { useNotes } from '@/app/hooks/useNotes';
+import { useNotes } from '@/app/contexts/NotesContext';
 
 export default function NotePage({ params }: { params: { id: string } }) {
     const router = useRouter();

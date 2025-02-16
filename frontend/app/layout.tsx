@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { NotesProvider } from './contexts/NotesContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -15,7 +16,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     return (
         <html lang="en" data-oid="9tx1obn">
             <body className={inter.className} data-oid="t_-vkeb">
-                <ErrorBoundary data-oid="1a2dg_w">{children}</ErrorBoundary>
+                <NotesProvider>
+                    <ErrorBoundary data-oid="1a2dg_w">{children}</ErrorBoundary>
+                </NotesProvider>
             </body>
         </html>
     );

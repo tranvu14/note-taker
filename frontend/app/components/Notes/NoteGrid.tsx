@@ -2,7 +2,7 @@
 
 import { Note } from '@/app/types/note';
 import { useRouter } from 'next/navigation';
-import { useNotes } from '@/app/hooks/useNotes';
+import { useNotes } from '@/app/contexts/NotesContext';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment, useCallback } from 'react';
 
@@ -50,7 +50,7 @@ export function NoteGrid({ notes, isLoading, total }: NoteGridProps) {
 
 function NoteCard({ note }: { note: Note }) {
     const router = useRouter();
-    const { handleArchiveNote } = useNotes();
+    const { handleArchiveNote, handlePinNote } = useNotes();
 
     const goToDetail = () => {
         router.push(`/note/${note.id}`);
@@ -61,30 +61,10 @@ function NoteCard({ note }: { note: Note }) {
         await handleArchiveNote(note.id, !note.isArchived);
     };
 
-    const handlePinNote = useCallback(async (e: React.MouseEvent) => {
+    const onPinNote = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
-        try {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch(`/api/notes/${note.id}`, {
-                method: 'PUT',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    isPinned: !note.isPinned,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update note');
-            }
-        } catch (error) {
-            console.error('Error pinning note:', error);
-        } finally {
-            router.refresh();
-        }
-    }, [note.id, note.isPinned, router]);
+        await handlePinNote(note.id, !note.isPinned);
+    }, [note.id, note.isPinned, handlePinNote]);
 
     return (
         <div
@@ -130,7 +110,7 @@ function NoteCard({ note }: { note: Note }) {
                                 <Menu.Item>
                                     {({ active }) => (
                                         <button
-                                            onClick={handlePinNote}
+                                            onClick={onPinNote}
                                             className={`${
                                                 active
                                                     ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300'

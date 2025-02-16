@@ -6,8 +6,8 @@ import { Header } from '../components/Header/Header';
 import { Sidebar } from '../components/Sidebar/Sidebar';
 import { NoteGrid } from '../components/Notes/NoteGrid';
 import { useAuth } from '../hooks/useAuth';
-import { useNotes } from '../hooks/useNotes';
 import { useDarkMode } from '../hooks/useDarkMode';
+import { useNotes } from '../contexts/NotesContext';
 
 export default function ArchivedNotesPage() {
     const router = useRouter();

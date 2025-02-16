@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { Note, RequestNote } from '@/app/types/note';
 import { debounce } from 'lodash';
 
@@ -11,8 +11,23 @@ interface PaginationData {
     totalPages: number;
 }
 
+interface NotesContextType {
+    notes: Note[];
+    notesLoading: boolean;
+    saveLoading: boolean;
+    error: string | null;
+    pagination: PaginationData;
+    fetchNotes: (page?: number, limit?: number) => Promise<void>;
+    searchNotes: (query: string, tags: string[], page?: number, limit?: number, archived?: boolean) => Promise<void>;
+    handleSaveNote: (noteData: RequestNote) => Promise<boolean>;
+    handleArchiveNote: (noteId: string, archive: boolean) => Promise<boolean>;
+    handlePinNote: (noteId: string, isPinned: boolean) => Promise<void>;
+    fetchNoteById: (noteId: string) => Promise<Note>;
+}
 
-export function useNotes() {
+const NotesContext = createContext<NotesContextType | undefined>(undefined);
+
+export function NotesProvider({ children }: { children: ReactNode }) {
     const [notes, setNotes] = useState<Note[]>([]);
     const [notesLoading, setNotesLoading] = useState(false);
     const [saveLoading, setSaveLoading] = useState(false);
@@ -44,7 +59,6 @@ export function useNotes() {
             }
 
             const data = await response.json();
-
             setNotes(data.notes);
             setPagination(data.pagination);
         } catch (error) {
@@ -56,13 +70,7 @@ export function useNotes() {
     }, []);
 
     const searchNotes = useCallback(
-        async (
-            query: string,
-            tags: string[],
-            page: number = 1,
-            limit: number = 9,
-            archived?: boolean,
-        ) => {
+        async (query: string, tags: string[], page: number = 1, limit: number = 9, archived?: boolean) => {
             setNotesLoading(true);
             setError(null);
             try {
@@ -111,8 +119,12 @@ export function useNotes() {
         [],
     );
 
-    // Create a debounced version of searchNotes
-    const debouncedSearch = useMemo(() => debounce(searchNotes, 300), [searchNotes]);
+    const debouncedSearch = useMemo(
+        () => 
+            (...args: Parameters<typeof searchNotes>) => 
+                Promise.resolve(debounce(searchNotes, 300)(...args)),
+        [searchNotes]
+    );
 
     const handleSaveNote = useCallback(async (noteData: RequestNote) => {
         setSaveLoading(true);
@@ -160,31 +172,14 @@ export function useNotes() {
                 throw new Error('Failed to archive note');
             }
 
-            // Update the notes list locally
-            setNotes((prev) =>
-                prev.map((note) => (note.id === noteId ? { ...note, isArchived: archive } : note)),
-            );
-
+            // Update the notes list locally and refresh
+            await fetchNotes(pagination.page, pagination.limit);
             return true;
         } catch (error) {
             console.error('Error archiving note:', error);
             return false;
         }
-    }, []);
-
-    const fetchNoteById = useCallback(async (noteId: string) => {
-        const token = localStorage.getItem('authToken');
-        const response = await fetch(`/api/notes/${noteId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch note');
-        }
-
-        const data = await response.json();
-        return data.note;
-    }, []);
+    }, [fetchNotes, pagination]);
 
     const handlePinNote = useCallback(async (noteId: string, isPinned: boolean) => {
         try {
@@ -204,14 +199,28 @@ export function useNotes() {
                 throw new Error('Failed to update note');
             }
 
-            // Refresh the notes list after pinning/unpinning
-            await fetchNotes();
+            // Refresh the notes list
+            await fetchNotes(pagination.page, pagination.limit);
         } catch (error) {
             console.error('Error pinning note:', error);
         }
-    }, [searchNotes]);
+    }, [fetchNotes, pagination]);
 
-    return {
+    const fetchNoteById = useCallback(async (noteId: string) => {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(`/api/notes/${noteId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch note');
+        }
+
+        const data = await response.json();
+        return data.note;
+    }, []);
+
+    const value = {
         notes,
         notesLoading,
         saveLoading,
@@ -221,7 +230,17 @@ export function useNotes() {
         searchNotes: debouncedSearch,
         handleSaveNote,
         handleArchiveNote,
-        fetchNoteById,
         handlePinNote,
+        fetchNoteById,
     };
+
+    return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;
 }
+
+export function useNotes() {
+    const context = useContext(NotesContext);
+    if (context === undefined) {
+        throw new Error('useNotes must be used within a NotesProvider');
+    }
+    return context;
+} 
