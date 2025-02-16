@@ -1,6 +1,8 @@
 import { API_ENDPOINTS } from '@/app/config/api';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 function getAuthToken(request: Request) {
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
