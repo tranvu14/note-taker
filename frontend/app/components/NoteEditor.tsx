@@ -86,7 +86,7 @@ export function NoteEditor({ note, onClose, onSave }: NoteEditorProps) {
             data-oid="5zd5eti"
         >
             <div
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 mx-4 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
                 data-oid="8qolnjw"
             >
                 <div className="flex justify-between items-center mb-4" data-oid="k1052sl">

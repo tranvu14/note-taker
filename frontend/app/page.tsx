@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LandingPage } from './components/Landing/LandingPage';
 import { AuthModal } from './components/Auth/AuthModal';
 import { useAuth } from './hooks/useAuth';
@@ -14,10 +14,11 @@ export default observer(function Page() {
     const router = useRouter();
     const [showAuthModal, setShowAuthModal] = useState(false);
 
-    if (isAuthenticated) {
-        router.push('/notes');
-        return null;
-    }
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.push('/notes');
+        }
+    }, [isAuthenticated, router]);
 
     const handleAuthSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();

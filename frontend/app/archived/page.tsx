@@ -12,19 +12,21 @@ import { useDarkMode } from '../hooks/useDarkMode';
 export default function ArchivedNotesPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading, user, handleSignOut } = useAuth();
-    const { notes, notesLoading, pagination } = useNotes();
+    const { notes, notesLoading, pagination, searchNotes } = useNotes();
+    const [currentPage, setCurrentPage] = useState(1);
+    const notesPerPage = 9;
     const { darkMode, toggleDarkMode } = useDarkMode();
 
     const [showSidebar, setShowSidebar] = useState(true);
+
     useEffect(() => {
         if (!isAuthenticated && !isLoading) {
             router.replace('/');
+        } else if (isAuthenticated) {
+            searchNotes('', [], currentPage, notesPerPage, true);
         }
-    }, [isAuthenticated, isLoading, router]);
+    }, [isAuthenticated, isLoading, router, searchNotes, currentPage, notesPerPage]);
 
-    if (!isAuthenticated) {
-        return null;
-    }
 
     return (
         <div
@@ -39,11 +41,10 @@ export default function ArchivedNotesPage() {
                 onSignOut={handleSignOut}
             />
 
-            <div className="pt-16 flex">
+            <div className="pt-16 md:flex">
                 <Sidebar
                     showSidebar={showSidebar}
                     activeTab="archived"
-                    onNewNote={() => {}}
                     onTabChange={(tab) => {
                         if (tab !== 'archived') {
                             router.push(`/${tab.replace(' ', '')}`);
@@ -52,12 +53,9 @@ export default function ArchivedNotesPage() {
                 />
 
                 <main
-                    className={`flex-1 transition-all duration-300 ${showSidebar ? 'ml-64' : 'ml-0'}`}
+                    className={`flex-1 transition-all duration-300  pt-[3.5rem] pb-24 md:py-0 ${showSidebar ? 'md:ml-64' : 'md:ml-0'}`}
                 >
                     <div className="container mx-auto px-6 py-8">
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                            Archived Notes
-                        </h1>
                         <NoteGrid
                             notes={notes.filter((note) => note.isArchived)}
                             isLoading={notesLoading}

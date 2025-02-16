@@ -48,7 +48,7 @@ export function useNotes() {
             }
 
             const data = await response.json();
-            console.log(data);
+
             setNotes(data.notes);
             setPagination(data.pagination);
         } catch (error) {
@@ -176,6 +176,20 @@ export function useNotes() {
         }
     }, []);
 
+    const fetchNoteById = useCallback(async (noteId: string) => {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(`/api/notes/${noteId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch note');
+        }
+
+        const data = await response.json();
+        return data.note;
+    }, []);
+
     return {
         notes,
         notesLoading,
@@ -186,5 +200,6 @@ export function useNotes() {
         searchNotes: debouncedSearch,
         handleSaveNote,
         handleArchiveNote,
+        fetchNoteById,
     };
 }

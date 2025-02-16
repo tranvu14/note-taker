@@ -83,6 +83,15 @@ export function AuthModal({ onClose, onSubmit }: AuthModalProps) {
                         />
                     )}
                     <input
+                        name="action"
+                        type="text"
+                        required
+                        placeholder="action"
+                        value={authMode}
+                        className="hidden"
+                        data-oid="ikpjvps"
+                    />
+                    <input
                         name="email"
                         type="email"
                         required

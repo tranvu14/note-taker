@@ -5,21 +5,18 @@ import { useRouter } from 'next/navigation';
 import { Header } from '../components/Header/Header';
 import { Sidebar } from '../components/Sidebar/Sidebar';
 import { NoteGrid } from '../components/Notes/NoteGrid';
-import { NoteEditor } from '../components/NoteEditor';
 import { useAuth } from '../hooks/useAuth';
 import { useNotes } from '../hooks/useNotes';
 import { useDarkMode } from '../hooks/useDarkMode';
-import { RequestNote } from '../types/note';
 
 export default function NotesPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading, user, handleSignOut } = useAuth();
-    const { notes, notesLoading, pagination, searchNotes, handleSaveNote } = useNotes();
+    const { notes, notesLoading, pagination, searchNotes } = useNotes();
     const { darkMode, toggleDarkMode } = useDarkMode();
 
     const [showSidebar, setShowSidebar] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
-    const [showNoteEditor, setShowNoteEditor] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -28,24 +25,6 @@ export default function NotesPage() {
     const handleToggleSidebar = useCallback(() => {
         setShowSidebar((prev) => !prev);
     }, []);
-
-    const handleNewNote = useCallback(() => {
-        setShowNoteEditor(true);
-    }, []);
-
-    const handleCloseEditor = useCallback(() => {
-        setShowNoteEditor(false);
-    }, []);
-
-    const handleSaveAndClose = useCallback(
-        async (note: RequestNote) => {
-            const success = await handleSaveNote(note);
-            if (success) {
-                setShowNoteEditor(false);
-            }
-        },
-        [handleSaveNote],
-    );
 
     const handleTagSelection = useCallback(
         (tag: string) => {
@@ -114,9 +93,7 @@ export default function NotesPage() {
     }
 
     return (
-        <div
-            className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark:bg-gray-900' : 'bg-gray-50'}`}
-        >
+        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark:bg-gray-900' : 'bg-gray-50'}`}>
             <Header
                 user={user}
                 darkMode={darkMode}
@@ -126,18 +103,21 @@ export default function NotesPage() {
                 onSignOut={handleSignOut}
             />
 
-            <div className="pt-16 flex">
+            <div className="pt-16 md:flex">
                 <Sidebar
                     showSidebar={showSidebar}
                     activeTab={activeTab}
-                    onNewNote={handleNewNote}
                     onTabChange={setActiveTab}
                 />
 
                 <main
-                    className={`flex-1 transition-all duration-300 ${showSidebar ? 'ml-64' : 'ml-0'}`}
+                    className={`flex-1 transition-all duration-300 
+                        md:ml-64
+                        w-full min-h-[calc(100vh-4rem)]
+                        ${!showSidebar ? 'md:ml-0' : ''}
+                        pt-[3.5rem] pb-24 md:py-0`}
                 >
-                    <div className="container mx-auto px-6 py-8">
+                    <div className="container mx-auto px-4 md:px-6 py-4 md:py-8">
                         <div className="mb-6 space-y-4">
                             <div className="relative">
                                 <input
@@ -162,12 +142,12 @@ export default function NotesPage() {
                                 </svg>
                             </div>
 
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 max-w-full overflow-x-auto pb-2 scrollbar-hide">
                                 {uniqueTags.map((tag) => (
                                     <button
                                         key={tag}
                                         onClick={() => handleTagSelection(tag)}
-                                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
                                             selectedTags.includes(tag)
                                                 ? 'bg-purple-600 text-white'
                                                 : 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300'
@@ -191,7 +171,7 @@ export default function NotesPage() {
 
                         {pagination.totalPages > 1 && (
                             <div className="mt-8 flex justify-center">
-                                <div className="flex space-x-2">
+                                <div className="flex flex-wrap justify-center gap-2 p-2">
                                     <button
                                         onClick={() => handlePageChange(pagination.page - 1)}
                                         disabled={pagination.page === 1}
@@ -238,10 +218,6 @@ export default function NotesPage() {
                     </div>
                 </main>
             </div>
-
-            {showNoteEditor && (
-                <NoteEditor onClose={handleCloseEditor} onSave={handleSaveAndClose} />
-            )}
         </div>
     );
 }

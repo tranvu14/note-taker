@@ -1,17 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/app/components/Header/Header';
 import { NoteEditor } from '@/app/components/NoteEditor';
 import { useAuth } from '@/app/hooks/useAuth';
 import { useDarkMode } from '@/app/hooks/useDarkMode';
 import { Note } from '@/app/types/note';
+import { useNotes } from '@/app/hooks/useNotes';
 
 export default function NotePage({ params }: { params: { id: string } }) {
     const router = useRouter();
     const { isAuthenticated, user, handleSignOut } = useAuth();
     const { darkMode, toggleDarkMode } = useDarkMode();
+    const { fetchNoteById } = useNotes();
     const [note, setNote] = useState<Note | null>(null);
     const [isEditing, setIsEditing] = useState(false);
 
@@ -70,6 +72,16 @@ export default function NotePage({ params }: { params: { id: string } }) {
         }
     };
 
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchNoteById(params.id).then((note) => {
+                console.log(note);
+                setNote(note);
+            });
+        }
+    }, [fetchNoteById, params.id, isAuthenticated]);
+
+
     if (!isAuthenticated) {
         return null;
     }
@@ -97,6 +109,7 @@ export default function NotePage({ params }: { params: { id: string } }) {
             </div>
         );
     }
+
 
     return (
         <div

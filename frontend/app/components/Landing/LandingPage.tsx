@@ -197,7 +197,7 @@ export function LandingPage({ darkMode, onToggleDarkMode, onSignInClick }: Landi
                                         </div>
                                         {/* Floating elements */}
                                         <div
-                                            className="absolute -right-8 top-1/4 animate-float-slow z-10"
+                                            className="absolute -right-2 top-1/4 animate-float-slow z-10"
                                             data-oid="_tecr91"
                                         >
                                             <div
@@ -213,7 +213,7 @@ export function LandingPage({ darkMode, onToggleDarkMode, onSignInClick }: Landi
                                             </div>
                                         </div>
                                         <div
-                                            className="absolute -left-8 bottom-1/4 animate-float z-10"
+                                            className="absolute -left-2 bottom-1/4 animate-float z-10"
                                             data-oid="537f3ey"
                                         >
                                             <div

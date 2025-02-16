@@ -31,38 +31,36 @@ export function Header({
                     {isAuthenticated && (
                         <button
                             onClick={onToggleSidebar}
-                            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                            data-oid="-q9r48p"
+                            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hidden md:block"
+                            aria-label="Toggle Sidebar"
                         >
                             <svg
                                 className="w-6 h-6"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
-                                data-oid="8p194wb"
                             >
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                     strokeWidth={2}
                                     d="M4 6h16M4 12h16M4 18h16"
-                                    data-oid="c8y2ria"
                                 />
                             </svg>
                         </button>
                     )}
                     <h1
-                        className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+                        className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
                         data-oid="o5l-5r-"
                     >
                         NoteVerse
                     </h1>
                 </div>
-                <div className="flex items-center space-x-4" data-oid="c8utov6">
+                <div className="flex items-center space-x-2 md:space-x-4" data-oid="c8utov6">
                     <button
                         onClick={onToggleDarkMode}
                         className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                        data-oid="odsjp2a"
+                        aria-label="Toggle Dark Mode"
                     >
                         {darkMode ? (
                             <svg
@@ -98,7 +96,19 @@ export function Header({
                             </svg>
                         )}
                     </button>
-                    {isAuthenticated && user?.id && <UserMenu user={user} onSignOut={onSignOut} />}
+                    {isAuthenticated && user?.id && (
+                        <div className="relative">
+                            <button
+                                onClick={onSignOut}
+                                className="md:hidden px-3 py-1 text-sm rounded-lg bg-purple-100 text-purple-600 hover:bg-purple-200 dark:bg-purple-900 dark:text-purple-300"
+                            >
+                                Sign Out
+                            </button>
+                            <div className="hidden md:block">
+                                <UserMenu user={user} onSignOut={onSignOut} />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>
